@@ -86,9 +86,9 @@ while active:
                            commands.append(message[start:pos])
                        pos += 1
                     for messages in commands:
-			    if "schat(SERVER)" in message:
+			    if "schat(SERVER)" in messages:
 				regex = re.compile("\(([^\(\)]+)\)")
-				everything = regex.findall(message)
+				everything = regex.findall(messages)
 				args = everything[1].split(',')
 				trystuff = 1 
 				if len(everything) > 3:
@@ -117,9 +117,9 @@ while active:
 					    temp = random.choice(opponents)
 					write += "(cchat(SERVER)(ACTION,"+str(roundnum)+",ATTACK,"+temp+"))"
 					client_sock.send(write)
-			    elif "(sstat" in message:
+			    elif "(sstat" in messages:
 				    regex = re.compile("\(([^\(\)]+)\)")
-				    sargs = regex.findall(message)  
+				    sargs = regex.findall(messages)  
 				    allclients = sargs[0].split(',')
 				    newlen = len(allclients)
 				    if newlen != length:
@@ -134,20 +134,20 @@ while active:
 							opponents.remove(values) 
 				    print opponents
 				    length = newlen
-			    elif "(sjoin" in message:
+			    elif "(sjoin" in messages:
 				regex = re.compile("\(([^\(\)]+)\)")
-				args = regex.findall(message) 
+				args = regex.findall(messages) 
 				dudes = args[1].split(',')
 				name = args[0]
 				for values in dudes:
 				    if values not in opponents:
 					opponents.append(values) 
-			    elif "strike" in message:
+			    elif "strike" in messages:
 				regex = re.compile("\(([^\(\)]+)\)")
-				args = regex.findall(message) 
-			    if message == "":
+				args = regex.findall(messages) 
+			    if messages == "":
 				active = 0 
-			    print message
+			    print messages
 		elif i == sys.stdin:
 		    data = None
 		    data = sys.stdin.readline().strip()
