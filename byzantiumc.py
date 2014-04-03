@@ -39,7 +39,7 @@ client_sock.send("(cjoin("+name+"))")
 while active:
     inputready, outputready,exceptready = select.select(serverinput, [],[], timeout) 
     if not (inputready or outputready or exceptready):
-        if autoflag == 0:
+        if autoflag == 1:
             client_sock.send("(cstat)")
             if roundnum > 0:
                 dosomethingelse += 1
@@ -85,7 +85,7 @@ while active:
                        if oparen == cparen:
                            commands.append(message[start:pos])
                        pos += 1
-                    for messages in commands
+                    for messages in commands:
 			    if "schat(SERVER)" in message:
 				regex = re.compile("\(([^\(\)]+)\)")
 				everything = regex.findall(message)
@@ -148,44 +148,44 @@ while active:
 			    if message == "":
 				active = 0 
 			    print message
-			elif i == sys.stdin:
-			    data = None
-			    data = sys.stdin.readline().strip()
-			    write = ""
-			    if data == "stat":
-				write += "(cstat)"
-			    elif "join" == data[:4]:
-				param = data.split()
-				write += "(cjoin("+ param[1]+"))"
-			    elif data[:2] == "w/":
-				param = data[2:].split()
-				name = param[0]
-				write += "(cchat("+name+")("+data[(3+len(name)):]+"))"
-			    elif "any " == data[:4]:
-				write += "(cchat(ANY)("+data[4:]+"))"
-			    elif "pass" == data[:4]:
-				write += "(cchat(SERVER)("
-				if phase == 0:
-				    write += "PLAN"
-				elif phase == 2:
-				    write += "ACTION"
-				write += ","+str(roundnum)+",PASS))"
-			    elif "offer" == data[:5]:
-				offerdata = data.split()
-				write += "(cchat(SERVER)(PLAN,"+str(roundnum)+",APPROACH,"+offerdata[1]+","+offerdata[2]+"))" 
-			    elif "ACCEPT" == data[:6]:
-				adata = data.split()
-				write += "(cchat(SERVER)(ACCEPT,"+str(roundnum)+","+adata[1]+"))"
-			    elif "DECLINE" == data[:7]:
-				ddata = data.split()
-				write += "(cchat(SERVER)(ACCEPT,"+str(roundnum)+","+ddata[1]+"))"
-			    elif "attack" == data[:6]:
-				atk = data.split()
-				write += "(cchat(SERVER)(ACTION,"+str(roundnum)+",ATTACK,"+atk[1]+"))"
-			    else:
-				write += "(cchat(ALL)("+data+"))" 
-			    for chars in write:
-				client_sock.send(chars) 
+		elif i == sys.stdin:
+		    data = None
+		    data = sys.stdin.readline().strip()
+		    write = ""
+		    if data == "stat":
+			write += "(cstat)"
+		    elif "join" == data[:4]:
+			param = data.split()
+			write += "(cjoin("+ param[1]+"))"
+		    elif data[:2] == "w/":
+			param = data[2:].split()
+			name = param[0]
+			write += "(cchat("+name+")("+data[(3+len(name)):]+"))"
+		    elif "any " == data[:4]:
+			write += "(cchat(ANY)("+data[4:]+"))"
+		    elif "pass" == data[:4]:
+			write += "(cchat(SERVER)("
+			if phase == 0:
+			    write += "PLAN"
+			elif phase == 2:
+			    write += "ACTION"
+			write += ","+str(roundnum)+",PASS))"
+		    elif "offer" == data[:5]:
+			offerdata = data.split()
+			write += "(cchat(SERVER)(PLAN,"+str(roundnum)+",APPROACH,"+offerdata[1]+","+offerdata[2]+"))" 
+		    elif "ACCEPT" == data[:6]:
+			adata = data.split()
+			write += "(cchat(SERVER)(ACCEPT,"+str(roundnum)+","+adata[1]+"))"
+		    elif "DECLINE" == data[:7]:
+			ddata = data.split()
+			write += "(cchat(SERVER)(ACCEPT,"+str(roundnum)+","+ddata[1]+"))"
+		    elif "attack" == data[:6]:
+			atk = data.split()
+			write += "(cchat(SERVER)(ACTION,"+str(roundnum)+",ATTACK,"+atk[1]+"))"
+		    else:
+			write += "(cchat(ALL)("+data+"))" 
+		    for chars in write:
+			client_sock.send(chars) 
 		else:
 		    active = 0
 client_sock.close() 
