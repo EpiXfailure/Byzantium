@@ -94,12 +94,12 @@ class player:
         closeparen = 0
         for chars in self.wbuffer:
             if chars == '(':
-                openpare += 1
+                openparen += 1
             elif chars == ')':
                 closeparen += 1
-        if closeparen < openparen:
+        if closeparen == openparen:
             return 1 
-        else
+        else:
             return 0
     def calctroops(self):
         result = []
@@ -429,18 +429,6 @@ while active:
                             raw += s.recv(BUFFERSIZE)
                             if not raw:
                                 valid = 0
-                                sender.remove()
-                                sstat = "(sstat("
-	                        for players in gameroom.chatroom:
-		                    if players.name is not None:
-		                        sstat += players.name+","+str(players.strike)+","+str(players.troops)+","
-		                sstat = sstat.strip(',')+"))" 
-                                for dudes in gameroom.chatroom:
-                                    if players.name is not None:
-                                        try:
-                                            players.sd.send(sstat)
-                                        except:
-                                            players.remove()
                                 break
                         except:
                             break 
@@ -452,14 +440,15 @@ while active:
                     if sender.checkcomplete() == 0:
                         break
 		    processcmd = 0
-		    sender.wbuffer = re.sub(r"^[^c\(]*","", raw).strip()
-		    data = sender.wbuffer
 		    sender.wbuffer.rstrip()
+		    data = sender.wbuffer
+                    sender.wbuffer = ""
+                    print data
 		    if "(cjoin" ==  data[:6]:              #player cjoin command, lets them actually join the server
                         sender.time = time.time()
-			[args.strip(')') for args in sender.wbuffer.split('(')]
-			openparen = sender.wbuffer.count('(')
-			closeparen = sender.wbuffer.count(')')
+			[args.strip(')') for args in data.split('(')]
+			openparen = data.count('(')
+			closeparen = data.count(')')
 			if closeparen != 2 & openparen != 2:
 			    sender.strike += 1
 			    output = "(strike("+str(sender.strike)+")(cjoin: Malfromed String))"
@@ -534,8 +523,6 @@ while active:
 			    s.send(sstat)       
 		    elif "(cchat" in data[:6]:                                      #cchat functionality
 			regex = re.compile("\(([^\(\)]+)\)")
-			openparen = data.count('(')
-			closeparen = data.count(')')
 			args = regex.findall(data)
                         print sender.name + ": " + data
 			allflag = 0
