@@ -206,6 +206,8 @@ active = 1
 argindex = 0
 while active:
     timeout = 1
+    if playersize == 0:
+        gameroom.phase = -1
     #put in select statement then accept
     readready, outputready, exceptready = select.select(inputs,[] ,[], timeout)
     if not (readready or outputready or exceptready):
@@ -422,12 +424,17 @@ while active:
 		    for users in gameroom.chatroom:
 			if users.sd == s:
 			    sender = users
-                    s.setblocking(0)
+                    try:
+                        s.setblocking(0)
+                    except:
+                        print playersize
+                        break
                     valid = 1;
 		    while Getdata: 
                         try:
                             raw += s.recv(BUFFERSIZE)
                             if not raw:
+                                sender.remove()
                                 valid = 0
                                 break
                         except:
@@ -568,7 +575,10 @@ while active:
 				if allflag:                                        #send to everyone
 				    for index in gameroom.chatroom:
 					if index.sd != s and index.sd != sock:
-					    index.sd.send(senddata) 
+                                            try:
+					        index.sd.send(senddata) 
+                                            except:
+                                                break
 				    print senddata
 				elif anyflag:
 				    temp = sender.sd

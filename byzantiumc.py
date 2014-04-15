@@ -75,6 +75,9 @@ while active:
                     pos = 0
                     start = 0
                     commands = []
+                    if not message:
+                        active = 0
+                        break
                     for chars in message:
                        if oparen == cparen:
                            start = pos
@@ -83,7 +86,7 @@ while active:
                        elif chars == ')':
                            cparen += 1
                        if oparen == cparen:
-                           commands.append(message[start:pos])
+                           commands.append(message[start:pos+1])
                        pos += 1
                     for messages in commands:
 			    if "schat(SERVER)" in messages:

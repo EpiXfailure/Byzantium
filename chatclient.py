@@ -7,7 +7,7 @@ import re
 #host = '140.160.138.214'
 #port = 36708
 commands = sys.argv
-host = 'localhost'
+host = '127.0.1.1'
 port = 36731
 buffersize = 1024
 autoflag = 0
@@ -68,6 +68,7 @@ while active:
 			active = 0 
 		elif i == sys.stdin:
 		    data = None
+                    break
 		    data = sys.stdin.readline().strip()
 		    write = ""
 		    if data == "stat":
