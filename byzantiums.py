@@ -48,7 +48,7 @@ class player:
         self.resync = 0
         self.isturn = 0
         self.madeoffer = 0
-        self.troops = troopsize 
+        self.troops = 0
         self.sentoffer = 0
         self.recoffer = 0
         self.didattack = 0
@@ -73,7 +73,7 @@ class player:
         self.time = None
         self.resync = 0
         self.isturn = 0
-        self.troops = troopsize
+        self.troops = 0
         self.sentoffer = 0
         self.recoffer = 0 
         self.didattack = 0
@@ -149,7 +149,7 @@ class game:
             players.recoffer = 0
             if players.playernum != -1 and players.name is not None:
                 players.ingame =  1
-            elif players.troops <= 0:
+            elif players.troops <= 0 and players.name is not None:
                 players.remove()
     def checkendgame(self):
         countlive = 0
@@ -222,6 +222,9 @@ while active:
                     gameroom.phase = 0
                     for players in gameroom.chatroom:
                         if players.playernum != -1:
+                            players.troops = troopsize
+                    for players in gameroom.chatroom:
+                        if players.playernum != -1:
                             players.ingame = 1
                             try:
                                 players.sd.send("(schat(SERVER)(PLAN,"+str(gameroom.roundnum + 1)+"))")
@@ -253,7 +256,6 @@ while active:
                         except:
                             if players.playernum != -1:
                                 players.remove()
-                            
         elif gameroom.phase == 1:
             print "Phase 2"
             everyoneaccept = 1
@@ -333,15 +335,15 @@ while active:
                                     if otroops <= 10:
                                         gameroom.chatroom[opponents].troops = 0
                                 else:
-                                    while troopslost < troopthreshold and otroopslost > otroopthreshold:
+                                    while troopslost < troopthreshold and otroopslost < otroopthreshold:
                                         if troops > 10:
                                             yourroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
                                             opponentroll = [random.randint(0,10) , random.randint(0,10) ]
-                                            if max(yourroll) > max(opponentroll):
-                                                otroopslost -= 1
+                                            if max(yourroll) >= max(opponentroll):
+                                                otroopslost += 1
                                                 gameroom.chatroom[opponents].troops -= 1
                                             else:
-                                                troops -= 1
+                                                troopslost += 1
                                                 gameroom.chatroom[guys].troops -= 1
                                         else:
                                             gameroom.chatroom[guys].troops = 0
@@ -388,7 +390,9 @@ while active:
                             players.ingame = 0
                             players.dead = 1
                 gameroom.newround()
-                gameroom.checkendgame()
+                if gameroom.checkendgame() == 0:
+                    gameroom.phase = -1
+                    gameroom.lobbytime = time.time()
     else:
 	    for s in readready:
 		if s == sock:                         #accepting new players
