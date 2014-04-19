@@ -147,9 +147,7 @@ class game:
             players.opponents = 0
             players.nooffer = 1
             players.recoffer = 0
-            if players.playernum != -1 and players.name is not None:
-                players.ingame =  1
-            elif players.troops <= 0 and players.name is not None:
+            if players.troops <= 0 and players.name is not None and players.ingame == 1:
                 players.remove()
     def checkendgame(self):
         countlive = 0
@@ -161,14 +159,10 @@ class game:
             if countlive == 2:
                 return 1
         if keep:
-            keep.sd.send("(schat(SERVER)(You won the game))")
+            #keep.sd.send("(schat(SERVER)(You won the game))")
             self.roundnum = 0
             self.phase = -1
-            for players in self.chatroom:
-                if players.troops == 0:
-                    players.troops = troopsize
-                    players.dead = 0
-                    players.ingame = 1
+            self.ingame = 0
         return 0 
 
 gameroom = game()
@@ -213,8 +207,9 @@ while active:
     if not (readready or outputready or exceptready):
         for people in gameroom.chatroom:
             if people.playernum != -1:
-                if people.checktime() == 1:
-                    checkstrike(people)
+                if gameroom.phase != -1:
+                    if people.checktime() == 1:
+                        checkstrike(people)
         if gameroom.phase == -1:
             print "Game not started"
             if playersize >= minplayers:
@@ -225,7 +220,9 @@ while active:
                             players.troops = troopsize
                     for players in gameroom.chatroom:
                         if players.playernum != -1:
-                            players.ingame = 1
+                            if players.name is not None and players.ingame != 1:
+                                players.ingame = 1
+                                gameroom.ingame += 1
                             try:
                                 players.sd.send("(schat(SERVER)(PLAN,"+str(gameroom.roundnum + 1)+"))")
                             except:
@@ -237,6 +234,7 @@ while active:
             for people in gameroom.chatroom:
                 if people.sentoffer == 0 and people.playernum != -1 and people.ingame == 1:
                     sendmessages = 0
+                    print people.name + " " + str(people.ingame) + " " + str(people.sentoffer) + " " + str(people.playernum)
                     break
             if sendmessages == 1:
                 for orders in gameroom.offerlist:
@@ -250,7 +248,7 @@ while active:
                 gameroom.phase = 1
                 del gameroom.offerlist[:]
                 for people in gameroom.chatroom:
-                    if people.playernum != -1 and people.nooffer == 1 and people.dead == 0 and people.ingame == 1:
+                    if people.playernum != -1 and people.nooffer == 1 and people.ingame == 1:
                         try:
                             people.sd.send("(schat(SERVER)(OFFERL,"+str(gameroom.roundnum +1)+"))")
                         except:
@@ -278,7 +276,7 @@ while active:
             everyoneact = 1
             for people in gameroom.chatroom:
                 if people.didattack == 0 and people.playernum != -1 and people.ingame == 1:
-                    print people.name+" Needs to act"
+                    print people.name+" Needs to act"+str(people.ingame)
                     everyoneact = 0
                     break
             if everyoneact == 1:
@@ -320,36 +318,30 @@ while active:
                                     otroopthreshold = gameroom.chatroom[opponents].troops
                                 if gameroom.attackgrid[opponents][guys] == 1:
                                     while troopslost < troopthreshold and otroopslost < otroopthreshold:
-                                        if troops > 10:
-                                            yourroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
-                                            opponentroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
-                                            if max(yourroll) > max(opponentroll):
-                                                otroopslost += 1
-                                                gameroom.chatroom[opponents].troops -= 1
-                                            else:
-                                                troopslost += 1
-                                                gameroom.chatroom[guys].troops -= 1
+                                        yourroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
+                                        opponentroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
+                                        if max(yourroll) > max(opponentroll):
+                                            otroopslost += 1
+                                            gameroom.chatroom[opponents].troops -= 1
                                         else:
-                                            gameroom.chatroom[guys].troops = 0
-                                            gameroom.attackgrid[opponents][guys] = 0
-                                    if otroops <= 10:
-                                        gameroom.chatroom[opponents].troops = 0
+                                            troopslost += 1
+                                            gameroom.chatroom[guys].troops -= 1
                                 else:
                                     while troopslost < troopthreshold and otroopslost < otroopthreshold:
-                                        if troops > 10:
-                                            yourroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
-                                            opponentroll = [random.randint(0,10) , random.randint(0,10) ]
-                                            if max(yourroll) >= max(opponentroll):
-                                                otroopslost += 1
-                                                gameroom.chatroom[opponents].troops -= 1
-                                            else:
-                                                troopslost += 1
-                                                gameroom.chatroom[guys].troops -= 1
+                                        #if troops > 10:
+                                        yourroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
+                                        opponentroll = [random.randint(0,10) , random.randint(0,10) ]
+                                        if max(yourroll) > max(opponentroll):
+                                            otroopslost += 1
+                                            gameroom.chatroom[opponents].troops -= 1
                                         else:
-                                            gameroom.chatroom[guys].troops = 0
-                                            gameroom.attackgrid[opponents][guys] = 0
-                                    if otroops <= 10:
-                                        gameroom.chatroom[opponents].troops = 0
+                                            troopslost += 1
+                                            gameroom.chatroom[guys].troops -= 1
+                                        #else:
+                                            #gameroom.chatroom[guys].troops = 0
+                                            #gameroom.attackgrid[opponents][guys] = 0
+                                    #if otroops <= 10:
+                                        #gameroom.chatroom[opponents].troops = 0
                                             
                                     #person is not fighting back
                                 gameroom.chatroom[opponents].fought += 1
@@ -364,7 +356,7 @@ while active:
                 sstat = "(sstat("
                 data =""
 	        for players in gameroom.chatroom:
-		    if players.name is not None:
+		    if players.name is not None and players.troops > 0:
 		        sstat += players.name+","+str(players.strike)+","+str(players.troops)+","
 		sstat = sstat.strip(',')+"))" 
                 print sstat
@@ -380,19 +372,25 @@ while active:
                         players.recover = 0
                         players.opponents = 0
                         players.fought = 0
-                        try:
-                            players.sd.send(sstat)
-                            players.sd.send("(schat(SERVER)(PLAN,"+str(gameroom.roundnum + 1)+"))")
-                        except:
-                            players.remove()
-                        if players.troops <= 0:
-                            players.playernum = -1
-                            players.ingame = 0
-                            players.dead = 1
+                        if players.troops <= 0 and players.ingame == 1:
+                            players.dead = 1 
                 gameroom.newround()
+                for players in gameroom.chatroom:
+                    if players.name is not None and players.ingame != 1:
+                        players.ingame = 1
+                        gameroom.ingame += 1
+                        players.troops = troopsize
                 if gameroom.checkendgame() == 0:
                     gameroom.phase = -1
                     gameroom.lobbytime = time.time()
+                else:
+                    for players in gameroom.chatroom:
+                        if players.playernum != -1 and players.ingame == 1:
+                            try:
+                                players.sd.send(sstat)
+                                players.sd.send("(schat(SERVER)(PLAN,"+str(gameroom.roundnum + 1)+"))")
+                            except:
+                                players.remove()
     else:
 	    for s in readready:
 		if s == sock:                         #accepting new players
@@ -478,13 +476,13 @@ while active:
                                     try:
 				        s.send(output)
                                     except:
-                                        print "ducktape"
+                                        sender.remove()
+                                        break
 				    checkstrike(sender)
 				    break
 				sender.name = DOSNAME(rawname, sender.sd) 
 				output = "sjoin("+sender.name+")("
 				debug = sender.name+" Joined"
-                                gameroom.ingame += 1
 				print debug 
 			    else:               #there is something wrong with the format
 				sender.strike += 1
@@ -493,6 +491,7 @@ while active:
 				    s.send(output)
 				    checkstrike(sender)
 			    names = "("
+                            #tell everyone someone has joined the lobby
 			    for index in gameroom.chatroom:
 				if index.name is not None:
 				    names += index.name+","
@@ -526,7 +525,7 @@ while active:
 			    break
 			if gotname:
 			    for players in gameroom.chatroom:
-				if players.name is not None:
+				if players.name is not None and players.troops > 0:
 				    print players.name
 				    sstat += players.name+","+str(players.strike)+","+str(players.troops)+","
 			    sstat = sstat.strip(',')+"))" 
