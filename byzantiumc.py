@@ -4,6 +4,7 @@ import sys
 import select
 import random
 import re
+import time
 #host = '140.160.138.214'
 #port = 36708
 commands = sys.argv
@@ -43,23 +44,26 @@ while active:
             client_sock.send("(cstat)")
             if roundnum > 0:
                 dosomethingelse += 1
-        if dosomethingelse > 2:
-            write = ""
-	    if phase == 0:
-                client_sock.send("(cchat(SERVER)(PLAN,"+str(roundnum)+",PASS))")
-	    elif phase == 1:
-	        phase = 1
-                if len(args) > 2:
-                    write += "(cchat(SERVER)(DECLINE,"+str(roundnum)+","+args[2]+"))"
-                    client_sock.send(write)
-  	    elif phase == 2:
-	        phase = 2
-                temp = name
-                while temp == name and len > 1:
-                    temp = random.choice(opponents)
-                    write += "(cchat(SERVER)(ACTION,"+str(roundnum)+",ATTACK,"+temp+"))"
-                    client_sock.send(write)
-            dosomethingelse = 0
+        #if dosomethingelse > 2:
+        #    write = ""
+	#    if phase == 0:
+        #        client_sock.send("(cchat(SERVER)(PLAN,"+str(roundnum)+",PASS))")
+        #        time.sleep(0.05)
+	#    elif phase == 1:
+	#        phase = 1
+        #        if len(args) > 2:
+        #            write += "(cchat(SERVER)(DECLINE,"+str(roundnum)+","+args[2]+"))"
+        #            time.sleep(0.05)
+        #            client_sock.send(write)
+  	#    elif phase == 2:
+	#        phase = 2
+        #        temp = name
+        #        while temp == name and len > 1:
+        #            temp = random.choice(opponents)
+        #            write += "(cchat(SERVER)(ACTION,"+str(roundnum)+",ATTACK,"+temp+"))"
+        #            time.sleep(0.05)
+        #            client_sock.send(write)
+        #    dosomethingelse = 0
     else:
 	    for i in inputready:
 		if i == client_sock:
@@ -103,11 +107,23 @@ while active:
 				    roundnum = int(args[1])
 				except:
 				    trystuff = 0
-				if trystuff == 1: 
+				if trystuff == 1 and length > 1: 
 				    write = ""
 				    if args[0] == "PLAN":
 					phase = 0
-					client_sock.send("(cchat(SERVER)(PLAN,"+str(roundnum)+",PASS))")
+                                        print str(length)
+                                        if length <= 6:
+					    client_sock.send("(cchat(SERVER)(PLAN,"+str(roundnum)+",PASS))")
+                                        else:
+					    write += "(cchat(SERVER)(PLAN,"+str(roundnum)+",APPROACH,"
+                                            ally = name
+					    while ally == name:
+					        ally = random.choice(opponents)
+                                            enemy = name
+                                            while enemy == name or enemy == ally:
+                                                enemy = random.choice(opponents)
+                                            write += ally + "," + enemy + "))"
+                                            client_sock.send(write)
 				    elif args[0] == "OFFERL":
 					phase = 1
 					if len(args) > 2:
@@ -152,7 +168,6 @@ while active:
 				active = 0 
 			    print messages
 		elif i == sys.stdin:
-		    data = None
 		    data = sys.stdin.readline().strip()
 		    write = ""
 		    if data == "stat":

@@ -83,6 +83,8 @@ class player:
         self.dead = 0
         self.fought = 0
     def checktime(self):
+        if self.sentoffer == 1 or self.recoffer == 1 or self.didattack == 1 or self.nooffer == 1:
+            self.time = time.time()
         if time.time() - self.time > playertimeout:
             self.strike += 1
             self.sd.send("(strike("+str(self.strike)+")(Timeout))")
@@ -183,10 +185,12 @@ def DOSNAME(name, currentsd):
     for player in gameroom.chatroom:
         if currentsd != player.sd and player.sd != sock and player.name is not None:
             checkname = player.name
+            lastval = 0
             if '~' in player.name:
                 checkname = player.name.split('~')[0]
+                lastval = int(player.name.split('~')[1])
             if fixname[:strlen] == checkname: 
-                namecnt += 1
+                namecnt = lastval + 1
     if namecnt >= 10:
         base = 1
     if namecnt > 0:
@@ -251,6 +255,7 @@ while active:
                     if people.playernum != -1 and people.nooffer == 1 and people.ingame == 1:
                         try:
                             people.sd.send("(schat(SERVER)(OFFERL,"+str(gameroom.roundnum +1)+"))")
+                            people.sentoffer = 0
                         except:
                             if players.playernum != -1:
                                 players.remove()
@@ -316,7 +321,7 @@ while active:
                                     troopthreshold = gameroom.chatroom[guys].troops
                                 if otroopthreshold <= 10:
                                     otroopthreshold = gameroom.chatroom[opponents].troops
-                                if gameroom.attackgrid[opponents][guys] == 1:
+                                if gameroom.attackgrid[opponents][guys] == 1 and opponents != guys:
                                     while troopslost < troopthreshold and otroopslost < otroopthreshold:
                                         yourroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
                                         opponentroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
@@ -326,7 +331,7 @@ while active:
                                         else:
                                             troopslost += 1
                                             gameroom.chatroom[guys].troops -= 1
-                                else:
+                                elif gameroom.attackgrid[opponents][guys] == 0 and opponents != guys:
                                     while troopslost < troopthreshold and otroopslost < otroopthreshold:
                                         #if troops > 10:
                                         yourroll = [random.randint(0,10) , random.randint(0,10) , random.randint(0,10)]
@@ -344,10 +349,11 @@ while active:
                                         #gameroom.chatroom[opponents].troops = 0
                                             
                                     #person is not fighting back
-                                gameroom.chatroom[opponents].fought += 1
-                                gameroom.chatroom[guys].fought += 1
-                                gameroom.attackgrid[guys][opponents] = 0
-                                gameroom.attackgrid[opponents][guys] = 0
+                                if opponents != guys:
+                                    gameroom.chatroom[opponents].fought += 1
+                                    gameroom.chatroom[guys].fought += 1
+                                    gameroom.attackgrid[guys][opponents] = 0
+                                    gameroom.attackgrid[opponents][guys] = 0
                                 if opponents != guys:
                                     if gameroom.chatroom[opponents].troops <= 0:
                                         gameroom.chatroom[guys].troops += troopsize
@@ -525,7 +531,7 @@ while active:
 			    break
 			if gotname:
 			    for players in gameroom.chatroom:
-				if players.name is not None and players.troops > 0:
+				if players.name is not None:
 				    print players.name
 				    sstat += players.name+","+str(players.strike)+","+str(players.troops)+","
 			    sstat = sstat.strip(',')+"))" 
@@ -673,7 +679,6 @@ while active:
 				    elif gameroom.phase == 2:    ##############################Phase 3 ##################################
                                         if sender.didattack == 1:
 					    sender.strike += 1
-                                            print "Error here"
 					    output = "(strike("+str(sender.strike)+")(Malformed string)"
 					    s.send(output)
 					    checkstrike(sender)
@@ -730,5 +735,7 @@ while active:
 			    sender.remove()
 			checkstrike(sender)
 			break
+                    data = ""
+                    sender.wbuffer = ""
 
 sock.close() 
